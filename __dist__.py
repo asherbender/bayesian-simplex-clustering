@@ -732,8 +732,8 @@ class gausswish(object):
             # Simulate the marginal Wishart distribution.
             diag = 2.0*random.gamma((eta-np.arange(dim))/2.0)
             fact = np.diag(np.sqrt(diag))+np.tril(random.randn(dim, dim), -1)
-            fact = linalg.solve(fact, math.sqrt(eta)*linalg.cholesky(sigma).transpose())
-            disp = np.dot(fact.transpose(), fact)
+            fact = linalg.solve(fact, math.sqrt(eta)*linalg.cholesky(sigma).T)
+            disp = np.dot(fact.T, fact)
 
         else:
 
@@ -904,7 +904,7 @@ class gausswish(object):
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += np.dot(resid, resid.transpose())
+                    stat.sigma += np.dot(resid, resid.T)
                     stat.eta += size
 
             else:
@@ -926,7 +926,7 @@ class gausswish(object):
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += np.dot(resid, np.reshape(scale, [size, 1])*resid.transpose())
+                    stat.sigma += np.dot(resid, np.reshape(scale, [size, 1])*resid.T)
                     stat.eta += np.sum(scale)
 
         else:
@@ -952,7 +952,7 @@ class gausswish(object):
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += np.dot(resid, weight[:, np.newaxis]*resid.transpose())
+                    stat.sigma += np.dot(resid, weight[:, np.newaxis]*resid.T)
                     stat.eta += np.sum(scale)
 
             else:
@@ -974,7 +974,7 @@ class gausswish(object):
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += np.dot(resid, np.reshape(weight, [size, 1])*resid.transpose())
+                    stat.sigma += np.dot(resid, np.reshape(weight, [size, 1])*resid.T)
                     stat.eta += size
 
         if stat.omega > 0.0:
@@ -1030,7 +1030,7 @@ class gausswish(object):
             eta += stat.eta
             sigma /= eta
 
-        sigma = sigma/2.0+(sigma/2.0).transpose()
+        sigma = sigma/2.0+(sigma/2.0).T
 
         self.__param__.mu = mu
         self.__param__.omega = omega
