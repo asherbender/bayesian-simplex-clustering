@@ -28,7 +28,7 @@ from __dist__ import dirich, gaussgamma, gausswish
 from __util__ import isconv, unique
 
 
-class model(object):
+class BayesianSimplexClustering(object):
 
     # Define a structure-like container class for storing the distributions
     # over the model parameters.
@@ -42,7 +42,7 @@ class model(object):
         assert numgroup > 0 and numcomp > 0 and numdim > 0
 
         self.__size__ = numgroup, numcomp, numdim
-        self.__prior__ = model.paramdist()
+        self.__prior__ = BayesianSimplexClustering.paramdist()
 
         dist = gaussgamma if diag else gausswish
 
@@ -173,7 +173,7 @@ class model(object):
 
         if post is None:
 
-            post = model.paramdist()
+            post = BayesianSimplexClustering.paramdist()
 
             # Initialize the posterior distributions over the model-specific
             # parameters.

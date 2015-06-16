@@ -4,7 +4,7 @@ import numpy as np
 from numpy import linalg
 from scipy.cluster import vq
 from matplotlib import patches, pyplot
-from mixmod import model
+from mixmod import BayesianSimplexClustering
 
 # Use same random data for repeatability.
 np.random.seed(seed=0)
@@ -147,19 +147,19 @@ if __name__ == '__main__':
            'disp': 10.0,
            'weight': 3.0}
 
-    mod = model(numgroup, numcomp, numdim)
+    model = BayesianSimplexClustering(numgroup, numcomp, numdim)
 
     # Set the hyper-parameters.
     for i in range(numgroup):
-        mod.group[i].alpha = param['prop']
+        model.group[i].alpha = param['prop']
 
     for i in range(numcomp):
-        mod.comp[i].omega = param['loc']
-        mod.comp[i].eta = max(param['disp'], numdim)
+        model.comp[i].omega = param['loc']
+        model.comp[i].eta = max(param['disp'], numdim)
 
     # Generate a collection of sets of complete data.
-    group, comp, weight, obs = mod.sim([numpoint for i in range(numsamp)],
-                                       alpha=param['prop'], nu=param['weight'])
+    group, comp, weight, obs = model.sim([numpoint for i in range(numsamp)],
+                                         alpha=param['prop'], nu=param['weight'])
 
     # Create a matrix of scatter plots of the data and color each observation
     # according to the mixture component responsible for generating it.
@@ -168,10 +168,10 @@ if __name__ == '__main__':
     fig.canvas.set_window_title('Observations')
 
     # Infer the approximate posterior probabilities and weights.
-    prob, weight, bound = mod.infer(obs, alpha=param['prop'],
-                                    nu=param['weight'])
+    prob, weight, bound = model.infer(obs, alpha=param['prop'],
+                                      nu=param['weight'])
 
-    loc, scale = zip(*[(mod.comp[k].mu, mod.comp[k].sigma) for k in range(numcomp)])
+    loc, scale = zip(*[(model.comp[k].mu, model.comp[k].sigma) for k in range(numcomp)])
 
     # Create another matrix of scatter plots, but this time color the points
     # according to their probabilistic component assignments.
