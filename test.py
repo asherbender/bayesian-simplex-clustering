@@ -42,8 +42,7 @@ def scatterplot(obs, assign, loc=None, scale=None, colormap='jet', numcolor=16):
         # Create a palette by quantizing a set of weighted base colors.
         color = {k: colormap(float(k) / float(numcateg)) for k in range(numcateg)}
 
-        palette, ind = vq.kmeans2(np.dot(assign.transpose(),
-                                         list(color.values())),
+        palette, ind = vq.kmeans2(np.dot(assign.T, list(color.values())),
                                   min(numcolor, numpoint), minit='points')
 
         palette = {k: np.clip(palette[k, :], 0.0, 1.0) for k in np.unique(ind)}
