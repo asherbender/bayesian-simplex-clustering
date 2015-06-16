@@ -1,5 +1,5 @@
 import math
-import numpy
+import numpy as np
 from numpy import linalg, random
 from scipy import special
 
@@ -18,7 +18,7 @@ class dirich(object):
 
         # Define default values for the parameters.
         if pi is None:
-            pi = numpy.repeat(1.0/dim, dim)
+            pi = np.repeat(1.0/dim, dim)
         if alpha is None:
             alpha = 1.0
 
@@ -42,12 +42,12 @@ class dirich(object):
     @pi.setter
     def pi(self, pi):
 
-        assert numpy.size(pi) == self.__dim__
+        assert np.size(pi) == self.__dim__
 
         # Check that the parameter is a vector on the unit simplex.
-        assert numpy.all(pi >= 0.0) and abs(numpy.sum(pi) - 1.0) < numpy.spacing(1.0)
+        assert np.all(pi >= 0.0) and abs(np.sum(pi) - 1.0) < np.spacing(1.0)
 
-        self.__param__.pi = numpy.copy(pi)
+        self.__param__.pi = np.copy(pi)
 
     @property
     def alpha(self):
@@ -57,7 +57,7 @@ class dirich(object):
     def alpha(self, alpha):
 
         # Check that the parameter is a positive number.
-        assert not numpy.isnan(alpha) and alpha > 0.0
+        assert not np.isnan(alpha) and alpha > 0.0
 
         self.__param__.alpha = float(alpha)
 
@@ -77,11 +77,11 @@ class dirich(object):
         pi = self.__param__.pi
         alpha = self.__param__.alpha
 
-        prop = numpy.copy(pi)
+        prop = np.copy(pi)
 
-        if numpy.isfinite(alpha):
+        if np.isfinite(alpha):
 
-            ind, = numpy.where(pi > 0.0)
+            ind, = np.where(pi > 0.0)
 
             # Simulate the Dirichlet distribution.
             prop[ind] = random.gamma(alpha*pi[ind]) / alpha
@@ -94,20 +94,20 @@ class dirich(object):
         dim = self.__dim__
 
         if obs is None:
-            obs = numpy.arange(dim)
+            obs = np.arange(dim)
         else:
-            assert numpy.ndim(obs) == 1
+            assert np.ndim(obs) == 1
 
         pi = self.__param__.pi
         alpha = self.__param__.alpha
 
-        if numpy.isfinite(alpha):
+        if np.isfinite(alpha):
 
-            val = numpy.zeros(numpy.size(obs))
+            val = np.zeros(np.size(obs))
 
-            val[:] =- numpy.inf
+            val[:] = -np.inf
 
-            ind, = numpy.where(pi[obs] > 0.0)
+            ind, = np.where(pi[obs] > 0.0)
 
             # Evaluate the expected log-likelihood.
             val[ind] = special.psi(alpha*pi[obs[ind]]) - special.psi(alpha)
@@ -115,7 +115,7 @@ class dirich(object):
             return val
 
         else:
-            return numpy.log(pi[obs])
+            return np.log(pi[obs])
 
     def div(self, other):
 
@@ -130,27 +130,27 @@ class dirich(object):
         prior.pi = other.__param__.pi
         prior.alpha = other.__param__.alpha
 
-        if numpy.isfinite(post.alpha) and numpy.isfinite(prior.alpha):
+        if np.isfinite(post.alpha) and np.isfinite(prior.alpha):
 
             ind = post.pi > 0.0
 
             # Both distributions must have the same support, otherwise the
             # divergence is infinite.
-            if numpy.logical_xor(ind, prior.pi > 0.0).any():
-                return numpy.inf
+            if np.logical_xor(ind, prior.pi > 0.0).any():
+                return np.inf
 
-            ind, = numpy.where(ind)
+            ind, = np.where(ind)
 
             # Compute the divergence between the posterior and the prior
             # Dirichlet distributions.
             return special.gammaln(post.alpha)-special.gammaln(prior.alpha) \
                    - (special.gammaln(post.alpha*post.pi[ind])-
                       special.gammaln(prior.alpha*prior.pi[ind])).sum() \
-                   + numpy.dot(post.alpha*post.pi[ind]-prior.alpha*prior.pi[ind],
+                   + np.dot(post.alpha*post.pi[ind]-prior.alpha*prior.pi[ind],
                                special.psi(post.alpha*post.pi[ind])-special.psi(post.alpha))
 
-        elif (numpy.isinf(post.alpha) and numpy.isinf(prior.alpha)
-             and numpy.equal(post.pi, prior.pi).all()):
+        elif (np.isinf(post.alpha) and np.isinf(prior.alpha) and
+              np.equal(post.pi, prior.pi).all()):
 
             # The divergence vanishes if both distributions have exactly the
             # same parameters, even if they are singular.
@@ -160,7 +160,7 @@ class dirich(object):
 
             # If either of the distributions is singular, and they have
             # different parameters, then the divergence is infinite.
-            return numpy.inf
+            return np.inf
 
     def stat(self, evidence):
 
@@ -169,16 +169,16 @@ class dirich(object):
         stat = dirich.param()
 
         # Initialize the expected sufficient statistics.
-        stat.pi = numpy.zeros(dim)
+        stat.pi = np.zeros(dim)
         stat.alpha = 0.0
 
         for prob in evidence:
 
-            assert numpy.ndim(prob) == 2
-            dim, size = numpy.shape(prob)
+            assert np.ndim(prob) == 2
+            dim, size = np.shape(prob)
             assert dim == self.__dim__
 
-            count = numpy.sum(prob, axis=1)
+            count = np.sum(prob, axis=1)
 
             # Update the expected sufficient statistics.
             stat.pi += count
@@ -190,14 +190,14 @@ class dirich(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, dirich.param) and numpy.size(stat.pi) == dim
+        assert isinstance(stat, dirich.param) and np.size(stat.pi) == dim
 
         pi = self.__param__.pi
         alpha = self.__param__.alpha
 
         # If the distribution is singular, then there is no more information to
         # be gained from the data.
-        if numpy.isinf(alpha):
+        if np.isinf(alpha):
             return
 
         # Update the parameters to reflect the information gained from the
@@ -227,11 +227,11 @@ class gaussgamma(object):
 
         # Define default values for the parameters.
         if mu is None:
-            mu = numpy.zeros(dim)
+            mu = np.zeros(dim)
         if omega is None:
             omega = 1.0
         if sigma is None:
-            sigma = numpy.ones(dim)
+            sigma = np.ones(dim)
         if eta is None:
             eta = 1.0
 
@@ -257,12 +257,12 @@ class gaussgamma(object):
     @mu.setter
     def mu(self, mu):
 
-        assert numpy.size(mu) == self.__dim__
+        assert np.size(mu) == self.__dim__
 
         # Check that the parameter is a vector of finite numbers.
-        assert not numpy.isnan(mu).any() and numpy.isfinite(mu).all()
+        assert not np.isnan(mu).any() and np.isfinite(mu).all()
 
-        self.__param__.mu = numpy.copy(mu)
+        self.__param__.mu = np.copy(mu)
 
     @property
     def omega(self):
@@ -272,7 +272,7 @@ class gaussgamma(object):
     def omega(self, omega):
 
         # Check that the parameter is a positive number.
-        assert not numpy.isnan(omega) and omega > 0.0
+        assert not np.isnan(omega) and omega > 0.0
 
         self.__param__.omega = float(omega)
 
@@ -283,12 +283,12 @@ class gaussgamma(object):
     @sigma.setter
     def sigma(self, sigma):
 
-        assert numpy.size(sigma) == self.__dim__
+        assert np.size(sigma) == self.__dim__
 
         # Check that the parameter is a vector of positive finite numbers.
-        assert not numpy.isnan(sigma).any() and numpy.isfinite(sigma).all() and numpy.all(sigma > 0.0)
+        assert not np.isnan(sigma).any() and np.isfinite(sigma).all() and np.all(sigma > 0.0)
 
-        self.__param__.sigma = numpy.copy(sigma)
+        self.__param__.sigma = np.copy(sigma)
 
     @property
     def eta(self):
@@ -298,7 +298,7 @@ class gaussgamma(object):
     def eta(self, eta):
 
         # Check that the parameter is a positive number.
-        assert not numpy.isnan(eta) and eta > 0.0
+        assert not np.isnan(eta) and eta > 0.0
 
         self.__param__.eta = float(eta)
 
@@ -324,7 +324,7 @@ class gaussgamma(object):
         sigma = self.__param__.sigma
         eta = self.__param__.eta
 
-        if numpy.isfinite(eta):
+        if np.isfinite(eta):
 
             # Simulate the marginal Gamma distribution.
             disp = sigma/(random.gamma(eta/2.0, size=dim)/(eta/2.0))
@@ -333,25 +333,25 @@ class gaussgamma(object):
 
             # Account for the special case where the marginal distribution is
             # singular.
-            disp = numpy.copy(sigma)
+            disp = np.copy(sigma)
 
-        if numpy.isfinite(omega):
+        if np.isfinite(omega):
 
             # Simulate the conditional Gauss distribution.
-            loc = mu + (numpy.sqrt(disp)*random.randn(dim))/math.sqrt(omega)
+            loc = mu + (np.sqrt(disp)*random.randn(dim))/math.sqrt(omega)
 
         else:
 
             # Account for the special case where the conditional distribution
             # is singular.
-            loc = numpy.copy(mu)
+            loc = np.copy(mu)
 
         return loc, disp
 
     def loglik(self, obs, nu=None):
 
-        assert numpy.ndim(obs) == 2
-        dim, size = numpy.shape(obs)
+        assert np.ndim(obs) == 2
+        dim, size = np.shape(obs)
         assert dim == self.__dim__
 
         mu = self.__param__.mu
@@ -360,24 +360,24 @@ class gaussgamma(object):
         eta = self.__param__.eta
 
         # Compute the expected squared error.
-        sqerr = ((numpy.abs(obs-mu[:, numpy.newaxis])**2)/sigma[:, numpy.newaxis]).sum(axis=0)
-        if numpy.isfinite(omega):
+        sqerr = ((np.abs(obs-mu[:, np.newaxis])**2)/sigma[:, np.newaxis]).sum(axis=0)
+        if np.isfinite(omega):
             sqerr += dim/omega
 
         # Compute half of the expected log-determinant.
-        logdet = numpy.log(sigma).sum()/2.0
-        if numpy.isfinite(eta):
-            logdet += (dim/2.0)*math.log(eta/2.0)-special.psi((eta-numpy.arange(dim))/2.0)/2.0
+        logdet = np.log(sigma).sum()/2.0
+        if np.isfinite(eta):
+            logdet += (dim/2.0)*math.log(eta/2.0)-special.psi((eta-np.arange(dim))/2.0)/2.0
 
         if nu is None:
 
             # Evaluate the expected log-likelihood of the observations.
             return -(numdim/2.0)*math.log(2.0*math.pi)-logdet-sqerr/2.0
 
-        elif numpy.isinf(nu):
+        elif np.isinf(nu):
 
             # Evaluate the expected log-likelihood of the observations, and the mixing weights.
-            return -(numdim/2.0)*math.log(2.0*math.pi)-logdet-sqerr/2.0, numpy.ones(size)
+            return -(numdim/2.0)*math.log(2.0*math.pi)-logdet-sqerr/2.0, np.ones(size)
 
         else:
 
@@ -386,7 +386,7 @@ class gaussgamma(object):
 
             # Evaluate the expected log-likelihood of the observations, and the
             # expected value of the posterior distribution over mixing weights.
-            return -const-((nu+dim)/2.0)*numpy.log1p(sqerr/nu), (nu+dim)/(nu+sqerr)
+            return -const-((nu+dim)/2.0)*np.log1p(sqerr/nu), (nu+dim)/(nu+sqerr)
 
     def div(self, other):
 
@@ -407,15 +407,15 @@ class gaussgamma(object):
         prior.sigma = other.__param__.sigma
         prior.eta = other.__param__.eta
 
-        if numpy.isfinite(post.omega) and numpy.isfinite(prior.omega):
+        if np.isfinite(post.omega) and np.isfinite(prior.omega):
 
             # Compute the expected divergence between the posterior and the
             # prior conditional Gauss distributions.
             div = (dim/2.0)*(prior.omega/post.omega-math.log(prior.omega/post.omega)-1.0) \
-                  + (prior.omega/2.0)*((numpy.abs(post.mu-prior.mu)**2)/post.sigma).sum()
+                  + (prior.omega/2.0)*((np.abs(post.mu-prior.mu)**2)/post.sigma).sum()
 
-        elif numpy.isinf(post.omega) and numpy.isinf(prior.omega)\
-             and numpy.equal(post.mu, prior.mu).all():
+        elif (np.isinf(post.omega) and np.isinf(prior.omega) and
+              np.equal(post.mu, prior.mu).all()):
 
             # The divergence vanishes if both distributions have exactly the
             # same parameters, even if they are singular.
@@ -425,13 +425,13 @@ class gaussgamma(object):
 
             # If either of the distributions is singular, and their parameters
             # are not exactly the same, then the divergence is infinite.
-            return numpy.inf
+            return np.inf
 
-        if numpy.isfinite(post.eta) and numpy.isfinite(prior.eta):
+        if np.isfinite(post.eta) and np.isfinite(prior.eta):
 
             # Calculate the log-determinants.
-            post.det = numpy.log(post.sigma).sum()
-            prior.det = numpy.log(prior.sigma).sum()
+            post.det = np.log(post.sigma).sum()
+            prior.det = np.log(prior.sigma).sum()
 
             aux = math.log(post.eta/2.0) - special.psi(post.eta/2.0).sum()
 
@@ -445,8 +445,8 @@ class gaussgamma(object):
                    - dim*(prior.eta/2.0)*math.log(prior.eta/2.0) \
                    + dim*(post.eta/2.0)*math.log(post.eta/2.0)
 
-        elif (numpy.isinf(post.eta) and numpy.isinf(prior.eta) and
-              numpy.equal(post.sigma, prior.sigma).all()):
+        elif (np.isinf(post.eta) and np.isinf(prior.eta) and
+              np.equal(post.sigma, prior.sigma).all()):
 
             # If both distributions have the same parameters, then the
             # divergence vanishes.
@@ -456,7 +456,7 @@ class gaussgamma(object):
 
             # If either distribution is singular, and they have different
             # parameters, then the divergence is infinite.
-            return numpy.inf
+            return np.inf
 
     def stat(self, evidence, weighted=False, scaled=False):
 
@@ -465,9 +465,9 @@ class gaussgamma(object):
         stat = gaussgamma.param()
 
         # Initialize the expected sufficient statistics.
-        stat.mu = numpy.zeros(dim)
+        stat.mu = np.zeros(dim)
         stat.omega = 0.0
-        stat.sigma = numpy.zeros(dim)
+        stat.sigma = np.zeros(dim)
         stat.eta = 0.0
 
         ref = self.__param__.mu.copy()
@@ -477,78 +477,78 @@ class gaussgamma(object):
             if not scaled:
                 for obs in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size = numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.sum(obs, axis=1)
+                    stat.mu += np.sum(obs, axis=1)
                     stat.omega += size
 
                     # Update the statistics of the marginal Gamma distribution.
-                    stat.sigma += (numpy.abs(obs-ref[:, numpy.newaxis])**2).sum(axis=1)
+                    stat.sigma += (np.abs(obs-ref[:, np.newaxis])**2).sum(axis=1)
                     stat.eta += size
 
             else:
                 for obs, scale in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size = numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Check that the size matches.
-                    assert numpy.ndim(scale) == 1 and numpy.size(scale) == size
+                    assert np.ndim(scale) == 1 and np.size(scale) == size
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.dot(obs, scale)
-                    stat.omega += numpy.sum(scale)
+                    stat.mu += np.dot(obs, scale)
+                    stat.omega += np.sum(scale)
 
                     # Update the statistics of the marginal Gamma distribution.
-                    stat.sigma += numpy.dot(numpy.abs(obs-ref[:, numpy.newaxis])**2, scale)
-                    stat.eta += numpy.sum(scale)
+                    stat.sigma += np.dot(np.abs(obs-ref[:, np.newaxis])**2, scale)
+                    stat.eta += np.sum(scale)
 
         else:
             if scaled:
                 for obs, weight, scale in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size = numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Check that the sizes match.
-                    assert numpy.ndim(weight) == 1 and numpy.size(weight) == size
-                    assert numpy.ndim(scale) == 1 and numpy.size(scale) == size
+                    assert np.ndim(weight) == 1 and np.size(weight) == size
+                    assert np.ndim(scale) == 1 and np.size(scale) == size
 
-                    weight = numpy.multiply(weight, scale)
+                    weight = np.multiply(weight, scale)
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.dot(obs, weight)
+                    stat.mu += np.dot(obs, weight)
                     stat.omega += weight.sum()
 
                     # Update the statistics of the marginal Gamma distribution.
-                    stat.sigma += numpy.dot(numpy.abs(obs-ref[:, numpy.newaxis])**2, weight)
-                    stat.eta += numpy.sum(scale)
+                    stat.sigma += np.dot(np.abs(obs-ref[:, np.newaxis])**2, weight)
+                    stat.eta += np.sum(scale)
 
             else:
                 for obs, weight in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size = numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Check that the size matches.
-                    assert numpy.ndim(weight) == 1 and numpy.size(weight) == size
+                    assert np.ndim(weight) == 1 and np.size(weight) == size
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.dot(obs, weight)
-                    stat.omega += numpy.sum(weight)
+                    stat.mu += np.dot(obs, weight)
+                    stat.omega += np.sum(weight)
 
                     # Update the statistics of the marginal Gamma distribution.
-                    stat.sigma += numpy.dot(numpy.abs(obs-ref[:, numpy.newaxis])**2, weight)
+                    stat.sigma += np.dot(np.abs(obs-ref[:, np.newaxis])**2, weight)
                     stat.eta += size
 
         if stat.omega > 0.0:
@@ -556,7 +556,7 @@ class gaussgamma(object):
 
         # Compensate for the difference between the reference mean and the
         # sample mean.
-        stat.sigma -= stat.omega*numpy.abs(ref)**2
+        stat.sigma -= stat.omega*np.abs(ref)**2
 
         return stat
 
@@ -564,8 +564,8 @@ class gaussgamma(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, gaussgamma.param) and numpy.size(stat.mu) == dim \
-               and numpy.size(stat.sigma) == dim
+        assert isinstance(stat, gaussgamma.param) and np.size(stat.mu) == dim \
+               and np.size(stat.sigma) == dim
 
         mu = self.__param__.mu
         omega = self.__param__.omega
@@ -574,7 +574,7 @@ class gaussgamma(object):
 
         # If the distribution is singular, then there is no more information to
         # be gained from the data.
-        if numpy.isinf(omega) and numpy.isinf(eta):
+        if np.isinf(omega) and np.isinf(eta):
             return self
 
         if stat.omega > 0.0:
@@ -582,7 +582,7 @@ class gaussgamma(object):
         else:
             diff = mu
 
-        if numpy.isfinite(omega):
+        if np.isfinite(omega):
 
             weight = (omega*stat.omega)/(omega+stat.omega)
 
@@ -596,11 +596,11 @@ class gaussgamma(object):
 
             weight = stat.omega
 
-        if numpy.isfinite(eta):
+        if np.isfinite(eta):
 
             # Update the parameters of the marginal Gamma distribution to
             # reflect the information gained from the data.
-            sigma = eta*sigma+stat.sigma+weight*numpy.abs(diff)**2
+            sigma = eta*sigma+stat.sigma+weight*np.abs(diff)**2
             eta += stat.eta
             sigma /= eta
 
@@ -627,13 +627,13 @@ class gausswish(object):
 
         # Define default values for the parameters.
         if mu is None:
-            mu = numpy.zeros(dim)
+            mu = np.zeros(dim)
         if omega is None:
-            omega=1.0
+            omega = 1.0
         if sigma is None:
-            sigma = numpy.eye(dim)
+            sigma = np.eye(dim)
         if eta is None:
-            eta=float(dim)
+            eta = float(dim)
 
         self.__dim__ = dim
         self.__param__ = gausswish.param()
@@ -657,12 +657,12 @@ class gausswish(object):
     @mu.setter
     def mu(self, mu):
 
-        assert numpy.size(mu) == self.__dim__
+        assert np.size(mu) == self.__dim__
 
         # Check that the parameter is a vector of finite numbers.
-        assert not numpy.isnan(mu).any() and numpy.isfinite(mu).all()
+        assert not np.isnan(mu).any() and np.isfinite(mu).all()
 
-        self.__param__.mu = numpy.copy(mu)
+        self.__param__.mu = np.copy(mu)
 
     @property
     def omega(self):
@@ -672,7 +672,7 @@ class gausswish(object):
     def omega(self, omega):
 
         # Check that the parameter is a positive number.
-        assert not numpy.isnan(omega) and omega > 0.0
+        assert not np.isnan(omega) and omega > 0.0
 
         self.__param__.omega = float(omega)
 
@@ -683,14 +683,14 @@ class gausswish(object):
     @sigma.setter
     def sigma(self, sigma):
 
-        assert numpy.shape(sigma) == (self.__dim__, self.__dim__)
+        assert np.shape(sigma) == (self.__dim__, self.__dim__)
 
         # Check that the parameter is a symmetric, positive-definite matrix.
-        assert not numpy.isnan(sigma).any() and numpy.isfinite(sigma).all() \
-               and numpy.allclose(numpy.transpose(sigma), sigma) \
+        assert not np.isnan(sigma).any() and np.isfinite(sigma).all() \
+               and np.allclose(np.transpose(sigma), sigma) \
                and (linalg.eigvals(sigma) > 0.0).all()
 
-        self.__param__.sigma = numpy.copy(sigma)
+        self.__param__.sigma = np.copy(sigma)
 
     @property
     def eta(self):
@@ -701,7 +701,7 @@ class gausswish(object):
 
         # Check that the parameter is a number greater than one minus the
         # number of degrees of freedom.
-        assert not numpy.isnan(eta) and eta > self.__dim__ - 1.0
+        assert not np.isnan(eta) and eta > self.__dim__ - 1.0
 
         self.__param__.eta = float(eta)
 
@@ -727,37 +727,37 @@ class gausswish(object):
         sigma = self.__param__.sigma
         eta = self.__param__.eta
 
-        if numpy.isfinite(eta):
+        if np.isfinite(eta):
 
             # Simulate the marginal Wishart distribution.
-            diag = 2.0*random.gamma((eta-numpy.arange(dim))/2.0)
-            fact = numpy.diag(numpy.sqrt(diag))+numpy.tril(random.randn(dim, dim), -1)
+            diag = 2.0*random.gamma((eta-np.arange(dim))/2.0)
+            fact = np.diag(np.sqrt(diag))+np.tril(random.randn(dim, dim), -1)
             fact = linalg.solve(fact, math.sqrt(eta)*linalg.cholesky(sigma).transpose())
-            disp = numpy.dot(fact.transpose(), fact)
+            disp = np.dot(fact.transpose(), fact)
 
         else:
 
             # Account for the special case where the marginal distribution is
             # singular.
-            disp = numpy.copy(sigma)
+            disp = np.copy(sigma)
 
-        if numpy.isfinite(omega):
+        if np.isfinite(omega):
 
             # Simulate the conditional Gauss distribution.
-            loc = mu+numpy.dot(linalg.cholesky(disp), random.randn(dim))/math.sqrt(omega)
+            loc = mu+np.dot(linalg.cholesky(disp), random.randn(dim))/math.sqrt(omega)
 
         else:
 
             # Account for the special case where the conditional distribution
             # is singular.
-            loc = numpy.copy(mu)
+            loc = np.copy(mu)
 
         return loc, disp
 
     def loglik(self, obs, nu=None):
 
-        assert numpy.ndim(obs) == 2
-        dim, size = numpy.shape(obs)
+        assert np.ndim(obs) == 2
+        dim, size = np.shape(obs)
         assert dim == self.__dim__
 
         mu = self.__param__.mu
@@ -768,25 +768,25 @@ class gausswish(object):
         fact = linalg.cholesky(sigma)
 
         # Compute the expected squared error.
-        sqerr = (numpy.abs(linalg.solve(fact, obs-mu[:, numpy.newaxis]))**2).sum(axis=0)
-        if numpy.isfinite(omega):
+        sqerr = (np.abs(linalg.solve(fact, obs-mu[:, np.newaxis]))**2).sum(axis=0)
+        if np.isfinite(omega):
             sqerr += dim/omega
 
         # Compute half of the expected log-determinant.
-        logdet = numpy.log(numpy.diag(fact)).sum()
-        if numpy.isfinite(eta):
-            logdet += (dim/2.0)*math.log(eta/2.0) - special.psi((eta-numpy.arange(dim))/2.0).sum()/2.0
+        logdet = np.log(np.diag(fact)).sum()
+        if np.isfinite(eta):
+            logdet += (dim/2.0)*math.log(eta/2.0) - special.psi((eta-np.arange(dim))/2.0).sum()/2.0
 
         if nu is None:
 
             # Evaluate the expected log-likelihood of the observations.
             return -(numdim/2.0)*math.log(2.0*math.pi)-logdet-sqerr/2.0
 
-        elif numpy.isinf(nu):
+        elif np.isinf(nu):
 
             # Evaluate the expected log-likelihood of the observations, and the
             # mixing weights.
-            return -(numdim/2.0)*math.log(2.0*math.pi)-logdet-sqerr/2.0, numpy.ones(size)
+            return -(numdim/2.0)*math.log(2.0*math.pi)-logdet-sqerr/2.0, np.ones(size)
 
         else:
 
@@ -795,7 +795,7 @@ class gausswish(object):
 
             # Evaluate the expected log-likelihood of the observations, and the
             # expected value of the posterior distribution over mixing weights.
-            return -const-((nu+dim)/2.0)*numpy.log1p(sqerr/nu), (nu+dim)/(nu+sqerr)
+            return -const-((nu+dim)/2.0)*np.log1p(sqerr/nu), (nu+dim)/(nu+sqerr)
 
     def div(self, other):
 
@@ -818,15 +818,15 @@ class gausswish(object):
 
         post.fact = linalg.cholesky(post.sigma)
 
-        if numpy.isfinite(post.omega) and numpy.isfinite(prior.omega):
+        if np.isfinite(post.omega) and np.isfinite(prior.omega):
 
             # Compute the expected divergence between the posterior and the
             # prior conditional Gauss distributions.
             div = (dim/2.0)*(prior.omega/post.omega-math.log(prior.omega/post.omega)-1.0) \
-                  + (prior.omega/2.0)*(numpy.abs(linalg.solve(post.fact, post.mu-prior.mu))**2).sum()
+                  + (prior.omega/2.0)*(np.abs(linalg.solve(post.fact, post.mu-prior.mu))**2).sum()
 
-        elif (numpy.isinf(post.omega) and numpy.isinf(prior.omega) and
-              numpy.equal(post.mu, prior.mu).all()):
+        elif (np.isinf(post.omega) and np.isinf(prior.omega) and
+              np.equal(post.mu, prior.mu).all()):
 
             # The divergence vanishes if both distributions have exactly the
             # same parameters, even if they are singular.
@@ -836,31 +836,31 @@ class gausswish(object):
 
             # If either of the distributions is singular, and their parameters
             # are not exactly the same, then the divergence is infinite.
-            return numpy.inf
+            return np.inf
 
-        if numpy.isfinite(post.eta) and numpy.isfinite(prior.eta):
+        if np.isfinite(post.eta) and np.isfinite(prior.eta):
 
             prior.fact = linalg.cholesky(prior.sigma)
 
             # Calculate half of the log-determinants.
-            post.det = numpy.log(numpy.diagonal(post.fact)).sum()
-            prior.det = numpy.log(numpy.diagonal(prior.fact)).sum()
+            post.det = np.log(np.diagonal(post.fact)).sum()
+            prior.det = np.log(np.diagonal(prior.fact)).sum()
 
             aux = (dim/2.0)*math.log(post.eta/2.0) \
-                  -special.psi((post.eta-numpy.arange(dim))/2.0).sum()/2.0
+                  -special.psi((post.eta-np.arange(dim))/2.0).sum()/2.0
 
             # Add the divergence between the posterior and the prior marginal
             # Wishart distributions.
             return div-(post.eta/2.0)*dim \
-                   + (prior.eta/2.0)*(numpy.abs(linalg.solve(post.fact, prior.fact))**2).sum() \
+                   + (prior.eta/2.0)*(np.abs(linalg.solve(post.fact, prior.fact))**2).sum() \
                    + (prior.eta-post.eta)*(post.det+aux)-prior.eta*prior.det+post.eta*post.det \
-                   + special.gammaln((prior.eta-numpy.arange(dim))/2.0).sum() \
-                   - special.gammaln((post.eta-numpy.arange(dim))/2.0).sum() \
+                   + special.gammaln((prior.eta-np.arange(dim))/2.0).sum() \
+                   - special.gammaln((post.eta-np.arange(dim))/2.0).sum() \
                    - dim*(prior.eta/2.0)*math.log(prior.eta/2.0) \
                    + dim*(post.eta/2.0)*math.log(post.eta/2.0)
 
-        elif (numpy.isinf(post.eta) and numpy.isinf(prior.eta) and
-              numpy.equal(post.sigma, prior.sigma).all()):
+        elif (np.isinf(post.eta) and np.isinf(prior.eta) and
+              np.equal(post.sigma, prior.sigma).all()):
 
             # If both distributions have the same parameters, then the
             # divergence vanishes.
@@ -870,7 +870,7 @@ class gausswish(object):
 
             # If either distribution is singular, and they have different
             # parameters, then the divergence is infinite.
-            return numpy.inf
+            return np.inf
 
     def stat(self, evidence, weighted=False, scaled=False):
 
@@ -879,9 +879,9 @@ class gausswish(object):
         stat = gausswish.param()
 
         # Initialize the expected sufficient statistics.
-        stat.mu = numpy.zeros(dim)
+        stat.mu = np.zeros(dim)
         stat.omega = 0.0
-        stat.sigma = numpy.zeros([dim, dim])
+        stat.sigma = np.zeros([dim, dim])
         stat.eta = 0.0
 
         ref = self.__param__.mu.copy()
@@ -891,90 +891,90 @@ class gausswish(object):
             if not scaled:
                 for obs in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size = numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.sum(obs, axis=1)
+                    stat.mu += np.sum(obs, axis=1)
                     stat.omega += size
 
-                    resid = obs-ref[:, numpy.newaxis]
+                    resid = obs-ref[:, np.newaxis]
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += numpy.dot(resid, resid.transpose())
+                    stat.sigma += np.dot(resid, resid.transpose())
                     stat.eta += size
 
             else:
                 for obs, scale in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size = numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Check that the size matches.
-                    assert numpy.ndim(scale) == 1 and numpy.size(scale) == size
+                    assert np.ndim(scale) == 1 and np.size(scale) == size
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.dot(obs, scale)
-                    stat.omega += numpy.sum(scale)
+                    stat.mu += np.dot(obs, scale)
+                    stat.omega += np.sum(scale)
 
-                    resid=obs-ref[:, numpy.newaxis]
+                    resid=obs-ref[:, np.newaxis]
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += numpy.dot(resid, numpy.reshape(scale, [size, 1])*resid.transpose())
-                    stat.eta += numpy.sum(scale)
+                    stat.sigma += np.dot(resid, np.reshape(scale, [size, 1])*resid.transpose())
+                    stat.eta += np.sum(scale)
 
         else:
             if scaled:
                 for obs, weight, scale in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size=numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Check that the sizes match.
-                    assert numpy.ndim(weight) == 1 and numpy.size(weight) == size
-                    assert numpy.ndim(scale) == 1 and numpy.size(scale) == size
+                    assert np.ndim(weight) == 1 and np.size(weight) == size
+                    assert np.ndim(scale) == 1 and np.size(scale) == size
 
-                    weight=numpy.multiply(weight, scale)
+                    weight = np.multiply(weight, scale)
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.dot(obs, weight)
+                    stat.mu += np.dot(obs, weight)
                     stat.omega += weight.sum()
 
-                    resid=obs-ref[:, numpy.newaxis]
+                    resid = obs-ref[:, np.newaxis]
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += numpy.dot(resid, weight[:, numpy.newaxis]*resid.transpose())
-                    stat.eta += numpy.sum(scale)
+                    stat.sigma += np.dot(resid, weight[:, np.newaxis]*resid.transpose())
+                    stat.eta += np.sum(scale)
 
             else:
                 for obs, weight in evidence:
 
-                    assert numpy.ndim(obs) == 2
-                    dim, size=numpy.shape(obs)
+                    assert np.ndim(obs) == 2
+                    dim, size = np.shape(obs)
                     assert dim == self.__dim__
 
                     # Check that the size matches.
-                    assert numpy.ndim(weight) == 1 and numpy.size(weight) == size
+                    assert np.ndim(weight) == 1 and np.size(weight) == size
 
                     # Update the statistics of the conditional Gauss
                     # distribution.
-                    stat.mu += numpy.dot(obs, weight)
-                    stat.omega += numpy.sum(weight)
+                    stat.mu += np.dot(obs, weight)
+                    stat.omega += np.sum(weight)
 
-                    resid=obs-ref[:, numpy.newaxis]
+                    resid=obs-ref[:, np.newaxis]
 
                     # Update the statistics of the marginal Wishart
                     # distribution.
-                    stat.sigma += numpy.dot(resid, numpy.reshape(weight, [size, 1])*resid.transpose())
+                    stat.sigma += np.dot(resid, np.reshape(weight, [size, 1])*resid.transpose())
                     stat.eta += size
 
         if stat.omega > 0.0:
@@ -982,7 +982,7 @@ class gausswish(object):
 
         # Compensate for the difference between the reference mean and the
         # sample mean.
-        stat.sigma -= stat.omega*numpy.outer(ref, ref)
+        stat.sigma -= stat.omega*np.outer(ref, ref)
 
         return stat
 
@@ -990,8 +990,8 @@ class gausswish(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, gausswish.param) and numpy.size(stat.mu) == dim \
-               and numpy.shape(stat.sigma) == (dim, dim)
+        assert isinstance(stat, gausswish.param) and np.size(stat.mu) == dim \
+               and np.shape(stat.sigma) == (dim, dim)
 
         mu = self.__param__.mu
         omega = self.__param__.omega
@@ -1000,7 +1000,7 @@ class gausswish(object):
 
         # If the distribution is singular, then there is no more information to
         # be gained from the data.
-        if numpy.isinf(omega) and numpy.isinf(eta):
+        if np.isinf(omega) and np.isinf(eta):
             return
 
         if stat.omega > 0.0:
@@ -1008,7 +1008,7 @@ class gausswish(object):
         else:
             diff = mu
 
-        if numpy.isfinite(omega):
+        if np.isfinite(omega):
 
             weight = (omega*stat.omega)/(omega+stat.omega)
 
@@ -1022,11 +1022,11 @@ class gausswish(object):
 
             weight = stat.omega
 
-        if numpy.isfinite(eta):
+        if np.isfinite(eta):
 
             # Update the parameters of the marginal Wishart distribution to
             # reflect the information gained from the data.
-            sigma = eta*sigma+stat.sigma+weight*numpy.outer(diff, diff)
+            sigma = eta*sigma + stat.sigma + weight*np.outer(diff, diff)
             eta += stat.eta
             sigma /= eta
 
