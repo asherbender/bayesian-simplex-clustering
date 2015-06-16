@@ -32,7 +32,7 @@ class BayesianSimplexClustering(object):
 
     # Define a structure-like container class for storing the distributions
     # over the model parameters.
-    class paramdist(object):
+    class ParamDist(object):
         group = None
         comp = None
 
@@ -42,7 +42,7 @@ class BayesianSimplexClustering(object):
         assert numgroup > 0 and numcomp > 0 and numdim > 0
 
         self.__size__ = numgroup, numcomp, numdim
-        self.__prior__ = BayesianSimplexClustering.paramdist()
+        self.__prior__ = BayesianSimplexClustering.ParamDist()
 
         dist = GaussianGamma if diag else GaussianWishart
 
@@ -173,7 +173,7 @@ class BayesianSimplexClustering(object):
 
         if post is None:
 
-            post = BayesianSimplexClustering.paramdist()
+            post = BayesianSimplexClustering.ParamDist()
 
             # Initialize the posterior distributions over the model-specific
             # parameters.
