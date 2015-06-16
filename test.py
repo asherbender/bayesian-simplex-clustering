@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from numpy import linalg
 from scipy.cluster import vq
 from matplotlib import patches, pyplot
@@ -8,7 +8,7 @@ from mixmod import model
 
 def scatterplot(obs, assign, loc=None, scale=None, colormap='jet', numcolor=16):
 
-    numdim, numpoint = numpy.shape(obs)
+    numdim, numpoint = np.shape(obs)
 
     # Create a figure and a matrix of axis pairs.
     fig, axis = pyplot.subplots(numdim, numdim)
@@ -33,18 +33,18 @@ def scatterplot(obs, assign, loc=None, scale=None, colormap='jet', numcolor=16):
 
     colormap = pyplot.get_cmap(colormap)
 
-    if numpy.ndim(assign) > 1:
+    if np.ndim(assign) > 1:
 
-        numcateg, numpoint = numpy.shape(assign)
+        numcateg, numpoint = np.shape(assign)
 
         # Create a palette by quantizing a set of weighted base colors.
         color = {k: colormap(float(k) / float(numcateg)) for k in range(numcateg)}
 
-        palette, ind = vq.kmeans2(numpy.dot(assign.transpose(),
-                                            list(color.values())),
+        palette, ind = vq.kmeans2(np.dot(assign.transpose(),
+                                         list(color.values())),
                                   min(numcolor, numpoint), minit='points')
 
-        palette = {k: numpy.clip(palette[k, :], 0.0, 1.0) for k in numpy.unique(ind)}
+        palette = {k: np.clip(palette[k, :], 0.0, 1.0) for k in np.unique(ind)}
 
     else:
 
@@ -78,13 +78,13 @@ def scatterplot(obs, assign, loc=None, scale=None, colormap='jet', numcolor=16):
 
                         # Decompose the corresponding sub-matrix of the scale
                         # matrix.
-                        eigval, eigvec = linalg.eigh(scale[k][numpy.ix_([i, j], [i, j])])
+                        eigval, eigvec = linalg.eigh(scale[k][np.ix_([i, j], [i, j])])
 
-                        width, height = numpy.sqrt(eigval)
-                        angle = numpy.degrees(numpy.arctan2(*eigvec[:, 0][::-1]))
+                        width, height = np.sqrt(eigval)
+                        angle = np.degrees(np.arctan2(*eigvec[:, 0][::-1]))
 
                         # Create an ellipse depicting the sub-matrix.
-                        ellip = patches.Ellipse(xy=loc[k][numpy.ix_([i, j])],
+                        ellip = patches.Ellipse(xy=loc[k][np.ix_([i, j])],
                                                 width=3.0*width,
                                                 height=3.0*height,
                                                 angle=angle,
@@ -96,7 +96,7 @@ def scatterplot(obs, assign, loc=None, scale=None, colormap='jet', numcolor=16):
                         axis[i, j].add_artist(ellip)
 
             else:
-                if numpy.ndim(assign) > 1:
+                if np.ndim(assign) > 1:
 
                     # Create a weighted histogram with the base colors.
                     axis[i, j].hist([obs[i, :] for k in range(numcateg)],
@@ -158,7 +158,7 @@ group, comp, weight, obs = mod.sim([numpoint for i in range(numsamp)],
 
 # Create a matrix of scatter plots of the data and color each observation
 # according to the mixture component responsible for generating it.
-fig, axis = scatterplot(numpy.concatenate(obs, axis=1), numpy.concatenate(comp))
+fig, axis = scatterplot(np.concatenate(obs, axis=1), np.concatenate(comp))
 
 fig.canvas.set_window_title('Observations')
 
@@ -169,8 +169,8 @@ loc, scale = zip(*[(mod.comp[k].mu, mod.comp[k].sigma) for k in range(numcomp)])
 
 # Create another matrix of scatter plots, but this time color the points
 # according to their probabilistic component assignments.
-fig, axis = scatterplot(numpy.concatenate(obs, axis=1),
-                        numpy.concatenate([p.sum(axis=0) for p in prob], axis=1),
+fig, axis = scatterplot(np.concatenate(obs, axis=1),
+                        np.concatenate([p.sum(axis=0) for p in prob], axis=1),
                         loc=loc, scale=scale)
 
 fig.canvas.set_window_title('Clustering results')
