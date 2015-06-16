@@ -154,7 +154,7 @@ for i in range(numcomp):
     mod.comp[i].eta=max(param['disp'],numdim)
 
 # Generate a collection of sets of complete data.
-group,comp,weight,obs=mod.sim(*[numpoint for i in range(numsamp)],
+group,comp,weight,obs=mod.sim([numpoint for i in range(numsamp)],
                               alpha=param['prop'],nu=param['weight'])
 
 # Create a matrix of scatter plots of the data and color each observation
@@ -164,7 +164,7 @@ fig,axis=scatterplot(numpy.concatenate(obs,axis=1),numpy.concatenate(comp))
 fig.canvas.set_window_title('Observations')
 
 # Infer the approximate posterior probabilities and weights.
-prob,weight,bound=mod.infer(*obs,alpha=param['prop'],nu=param['weight'])
+prob,weight,bound=mod.infer(obs,alpha=param['prop'],nu=param['weight'])
 
 loc,scale=zip(*[(mod.comp[k].mu,mod.comp[k].sigma) for k in range(numcomp)])
 

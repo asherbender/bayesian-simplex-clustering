@@ -4,7 +4,7 @@
 # multi-variate t distributions. The class implements methods
 # for generating simulated data and estimating the parameters
 # of the model.
-# 
+#
 # Simplicial mixture models are typically used in text-based
 # information retrieval, e.g. latent Dirichlet allocation (LDA).
 # The LDA model allocates topics to a set of documents within a
@@ -103,7 +103,7 @@ class model():
 
         self.__post__=None
 
-    def sim(self,*size,alpha=numpy.inf,nu=numpy.inf):
+    def sim(self,size,alpha=numpy.inf,nu=numpy.inf):
 
         # Check that the sizes and hyper-parameters are valid.
         assert all(n>0 for n in size) and alpha>0.0 and nu>0.0
@@ -151,7 +151,7 @@ class model():
 
         return group,comp,weight,obs
 
-    def infer(self,*obs,alpha=numpy.inf,nu=numpy.inf,initpost=True,
+    def infer(self,obs,alpha=numpy.inf,nu=numpy.inf,initpost=True,
               numiter=[10,1000],noisetemp=1.0e-2,reltol=1.0e-6):
 
         numgroup,numcomp,numdim=self.__size__
