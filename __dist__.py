@@ -211,7 +211,8 @@ class Dirichlet(object):
 
         return self
 
-class gaussgamma(object):
+
+class GaussianGamma(object):
 
     # Define a structure-like container class for storing the parameters of the
     # Gauss-Gamma distribution.
@@ -236,7 +237,7 @@ class gaussgamma(object):
             eta = 1.0
 
         self.__dim__ = dim
-        self.__param__ = gaussgamma.param()
+        self.__param__ = GaussianGamma.param()
 
         # Initialize the parameters.
         self.__param__.mu = mu
@@ -304,7 +305,7 @@ class gaussgamma(object):
 
     def copy(self, other):
 
-        assert isinstance(other, gaussgamma) and other.__dim__ == self.__dim__
+        assert isinstance(other, GaussianGamma) and other.__dim__ == self.__dim__
 
         # Copy the parameters of the posterior
         # distribution from the prior distribution.
@@ -390,12 +391,12 @@ class gaussgamma(object):
 
     def div(self, other):
 
-        assert isinstance(other, gaussgamma) and other.__dim__ == self.__dim__
+        assert isinstance(other, GaussianGamma) and other.__dim__ == self.__dim__
 
         dim = self.__dim__
 
-        post = gaussgamma.param()
-        prior = gaussgamma.param()
+        post = GaussianGamma.param()
+        prior = GaussianGamma.param()
 
         post.mu = self.__param__.mu
         post.omega = self.__param__.omega
@@ -462,7 +463,7 @@ class gaussgamma(object):
 
         dim = self.__dim__
 
-        stat = gaussgamma.param()
+        stat = GaussianGamma.param()
 
         # Initialize the expected sufficient statistics.
         stat.mu = np.zeros(dim)
@@ -564,7 +565,7 @@ class gaussgamma(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, gaussgamma.param) and np.size(stat.mu) == dim \
+        assert isinstance(stat, GaussianGamma.param) and np.size(stat.mu) == dim \
                and np.size(stat.sigma) == dim
 
         mu = self.__param__.mu
