@@ -4,8 +4,10 @@ import numpy as np
 from numpy import linalg
 from scipy.cluster import vq
 from matplotlib import patches, pyplot
-
 from mixmod import model
+
+# Use same random data for repeatability.
+np.random.seed(seed=0)
 
 
 def scatterplot(obs, assign, loc=None, scale=None, colormap='jet', numcolor=16):
