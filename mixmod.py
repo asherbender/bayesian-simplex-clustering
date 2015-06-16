@@ -24,7 +24,7 @@ import numpy as np
 from numpy import linalg, random
 
 # Import the module-specific classes and functions.
-from __dist__ import dirich, gaussgamma, gausswish
+from __dist__ import Dirichlet, gaussgamma, gausswish
 from __util__ import isconv, unique
 
 
@@ -47,7 +47,7 @@ class BayesianSimplexClustering(object):
         dist = gaussgamma if diag else gausswish
 
         # Initialize the prior distributions over the model parameters.
-        self.__prior__.group = [dirich(numcomp) for i in range(numgroup)]
+        self.__prior__.group = [Dirichlet(numcomp) for i in range(numgroup)]
         self.__prior__.comp = [dist(numdim) for i in range(numcomp)]
 
         self.__post__ = None
@@ -71,7 +71,7 @@ class BayesianSimplexClustering(object):
         assert len(group) == numgroup
 
         # Check that the arguments are Dirichlet distributions.
-        assert all(isinstance(d, dirich) for d in group)
+        assert all(isinstance(d, Dirichlet) for d in group)
 
         # Set these as the prior distributions over the group-specific
         # parameters.
@@ -119,7 +119,7 @@ class BayesianSimplexClustering(object):
         dist = self.__post__ if self.__post__ is not None else self.__prior__
 
         # Create a distribution over the sample-specific parameters.
-        prop = dirich(numgroup, alpha=alpha)
+        prop = Dirichlet(numgroup, alpha=alpha)
 
         # Generate the model-specific parameters.
         emiss = [p.rand() for p in dist.group]
@@ -181,8 +181,8 @@ class BayesianSimplexClustering(object):
             post.comp = copy.deepcopy(prior.comp)
 
         # Initialize the distributions over the sample-specific parameters.
-        prior.samp = [dirich(numgroup, alpha=alpha) for i in range(numsamp)]
-        post.samp = [dirich(numgroup, alpha=alpha) for i in range(numsamp)]
+        prior.samp = [Dirichlet(numgroup, alpha=alpha) for i in range(numsamp)]
+        post.samp = [Dirichlet(numgroup, alpha=alpha) for i in range(numsamp)]
 
         if initpost:
 

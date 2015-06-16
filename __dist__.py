@@ -4,7 +4,7 @@ from numpy import linalg, random
 from scipy import special
 
 
-class dirich(object):
+class Dirichlet(object):
 
     # Define a structure-like container class for storing the parameters of the
     # Dirichlet distribution.
@@ -23,7 +23,7 @@ class dirich(object):
             alpha = 1.0
 
         self.__dim__ = dim
-        self.__param__ = dirich.param()
+        self.__param__ = Dirichlet.param()
 
         # Initialize the parameters.
         self.__param__.pi = pi
@@ -63,7 +63,7 @@ class dirich(object):
 
     def copy(self, other):
 
-        assert isinstance(other, dirich) and other.__dim__ == self.__dim__
+        assert isinstance(other, Dirichlet) and other.__dim__ == self.__dim__
 
         # Copy the parameters of the posterior distribution from the prior
         # distribution.
@@ -119,10 +119,10 @@ class dirich(object):
 
     def div(self, other):
 
-        assert isinstance(other, dirich) and other.__dim__ == self.__dim__
+        assert isinstance(other, Dirichlet) and other.__dim__ == self.__dim__
 
-        post = dirich.param()
-        prior = dirich.param()
+        post = Dirichlet.param()
+        prior = Dirichlet.param()
 
         post.pi = self.__param__.pi
         post.alpha = self.__param__.alpha
@@ -166,7 +166,7 @@ class dirich(object):
 
         dim = self.__dim__
 
-        stat = dirich.param()
+        stat = Dirichlet.param()
 
         # Initialize the expected sufficient statistics.
         stat.pi = np.zeros(dim)
@@ -190,7 +190,7 @@ class dirich(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, dirich.param) and np.size(stat.pi) == dim
+        assert isinstance(stat, Dirichlet.param) and np.size(stat.pi) == dim
 
         pi = self.__param__.pi
         alpha = self.__param__.alpha
