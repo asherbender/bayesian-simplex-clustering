@@ -24,7 +24,7 @@ import numpy as np
 from numpy import linalg, random
 
 # Import the module-specific classes and functions.
-from __dist__ import Dirichlet, GaussianGamma, gausswish
+from __dist__ import Dirichlet, GaussianGamma, GaussianWishart
 from __util__ import isconv, unique
 
 
@@ -44,7 +44,7 @@ class BayesianSimplexClustering(object):
         self.__size__ = numgroup, numcomp, numdim
         self.__prior__ = BayesianSimplexClustering.paramdist()
 
-        dist = GaussianGamma if diag else gausswish
+        dist = GaussianGamma if diag else GaussianWishart
 
         # Initialize the prior distributions over the model parameters.
         self.__prior__.group = [Dirichlet(numcomp) for i in range(numgroup)]
@@ -99,7 +99,7 @@ class BayesianSimplexClustering(object):
 
         # Check that the arguments are either Gauss-Gamma or Gauss-Wishart
         # distributions.
-        assert all(isinstance(d, GaussianGamma) or isinstance(d, gausswish) for d in comp)
+        assert all(isinstance(d, GaussianGamma) or isinstance(d, GaussianWishart) for d in comp)
 
         # Set these as the prior distributions over the component-specific
         # parameters.

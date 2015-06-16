@@ -612,7 +612,8 @@ class GaussianGamma(object):
 
         return self
 
-class gausswish(object):
+
+class GaussianWishart(object):
 
     # Define a structure-like container class for storing the parameters of the
     # Gauss-Wishart distribution.
@@ -637,7 +638,7 @@ class gausswish(object):
             eta = float(dim)
 
         self.__dim__ = dim
-        self.__param__ = gausswish.param()
+        self.__param__ = GaussianWishart.param()
 
         # Initialize the parameters.
         self.__param__.mu = mu
@@ -708,7 +709,7 @@ class gausswish(object):
 
     def copy(self, other):
 
-        assert isinstance(other, gausswish) and other.__dim__ == self.__dim__
+        assert isinstance(other, GaussianWishart) and other.__dim__ == self.__dim__
 
         # Copy the parameters of the posterior distribution from the prior
         # distribution.
@@ -800,12 +801,12 @@ class gausswish(object):
 
     def div(self, other):
 
-        assert isinstance(other, gausswish) and other.__dim__ == self.__dim__
+        assert isinstance(other, GaussianWishart) and other.__dim__ == self.__dim__
 
         dim = self.__dim__
 
-        post = gausswish.param()
-        prior = gausswish.param()
+        post = GaussianWishart.param()
+        prior = GaussianWishart.param()
 
         post.mu = self.__param__.mu
         post.omega = self.__param__.omega
@@ -877,7 +878,7 @@ class gausswish(object):
 
         dim = self.__dim__
 
-        stat = gausswish.param()
+        stat = GaussianWishart.param()
 
         # Initialize the expected sufficient statistics.
         stat.mu = np.zeros(dim)
@@ -991,7 +992,7 @@ class gausswish(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, gausswish.param) and np.size(stat.mu) == dim \
+        assert isinstance(stat, GaussianWishart.param) and np.size(stat.mu) == dim \
                and np.shape(stat.sigma) == (dim, dim)
 
         mu = self.__param__.mu
