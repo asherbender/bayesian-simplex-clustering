@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import numpy as np
 from numpy import linalg
 from scipy.cluster import vq
@@ -130,55 +132,58 @@ def likplot(bound, color='blue'):
 
     return fig, axis
 
-# Set the size of the problem.
-numgroup = 2
-numcomp = 3
-numdim = 5
-numsamp = 10
-numpoint = 20
+if __name__ == '__main__':
 
-param={'prop': 5.0,
-       'loc': 0.1,
-       'disp': 10.0,
-       'weight': 3.0}
+    # Set the size of the problem.
+    numgroup = 2
+    numcomp = 3
+    numdim = 5
+    numsamp = 10
+    numpoint = 20
 
-mod = model(numgroup, numcomp, numdim)
+    param={'prop': 5.0,
+           'loc': 0.1,
+           'disp': 10.0,
+           'weight': 3.0}
 
-# Set the hyper-parameters.
-for i in range(numgroup):
-    mod.group[i].alpha = param['prop']
+    mod = model(numgroup, numcomp, numdim)
 
-for i in range(numcomp):
-    mod.comp[i].omega = param['loc']
-    mod.comp[i].eta = max(param['disp'], numdim)
+    # Set the hyper-parameters.
+    for i in range(numgroup):
+        mod.group[i].alpha = param['prop']
 
-# Generate a collection of sets of complete data.
-group, comp, weight, obs = mod.sim([numpoint for i in range(numsamp)],
-                                   alpha=param['prop'], nu=param['weight'])
+    for i in range(numcomp):
+        mod.comp[i].omega = param['loc']
+        mod.comp[i].eta = max(param['disp'], numdim)
 
-# Create a matrix of scatter plots of the data and color each observation
-# according to the mixture component responsible for generating it.
-fig, axis = scatterplot(np.concatenate(obs, axis=1), np.concatenate(comp))
+    # Generate a collection of sets of complete data.
+    group, comp, weight, obs = mod.sim([numpoint for i in range(numsamp)],
+                                       alpha=param['prop'], nu=param['weight'])
 
-fig.canvas.set_window_title('Observations')
+    # Create a matrix of scatter plots of the data and color each observation
+    # according to the mixture component responsible for generating it.
+    fig, axis = scatterplot(np.concatenate(obs, axis=1), np.concatenate(comp))
 
-# Infer the approximate posterior probabilities and weights.
-prob, weight, bound = mod.infer(obs, alpha=param['prop'], nu=param['weight'])
+    fig.canvas.set_window_title('Observations')
 
-loc, scale = zip(*[(mod.comp[k].mu, mod.comp[k].sigma) for k in range(numcomp)])
+    # Infer the approximate posterior probabilities and weights.
+    prob, weight, bound = mod.infer(obs, alpha=param['prop'],
+                                    nu=param['weight'])
 
-# Create another matrix of scatter plots, but this time color the points
-# according to their probabilistic component assignments.
-fig, axis = scatterplot(np.concatenate(obs, axis=1),
-                        np.concatenate([p.sum(axis=0) for p in prob], axis=1),
-                        loc=loc, scale=scale)
+    loc, scale = zip(*[(mod.comp[k].mu, mod.comp[k].sigma) for k in range(numcomp)])
 
-fig.canvas.set_window_title('Clustering results')
+    # Create another matrix of scatter plots, but this time color the points
+    # according to their probabilistic component assignments.
+    fig, axis = scatterplot(np.concatenate(obs, axis=1),
+                            np.concatenate([p.sum(axis=0) for p in prob], axis=1),
+                            loc=loc, scale=scale)
 
-# Plot the variational lower bound on the marginal log-likelihood of the data
-# after each iteration.
-fig, axis = likplot(bound)
+    fig.canvas.set_window_title('Clustering results')
 
-fig.canvas.set_window_title('Variational lower bound')
+    # Plot the variational lower bound on the marginal log-likelihood of the
+    # data after each iteration.
+    fig, axis = likplot(bound)
 
-pyplot.show()
+    fig.canvas.set_window_title('Variational lower bound')
+
+    pyplot.show()
