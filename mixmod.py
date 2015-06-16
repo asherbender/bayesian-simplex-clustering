@@ -7,7 +7,7 @@ distributions. The class implements methods for generating simulated data and
 estimating the parameters of the model.
 
 Simplicial mixture models are typically used in text-based information
-retrieval, e.g. latent Dirichlet allocation (LDA).  The LDA model allocates
+retrieval, e.g. latent Dirichlet allocation (LDA). The LDA model allocates
 topics to a set of documents within a corpus based on their word
 statistics. Here, the documents are replaced by continuous data. Each set of
 data originates from a simplicial mixture of multi-variate t distributions with
@@ -20,7 +20,7 @@ interface the documents' topics and words.
 """
 
 import copy
-import numpy
+import numpy as np
 from numpy import linalg, random
 
 # Import the module-specific classes and functions.
@@ -107,7 +107,7 @@ class model(object):
 
         self.__post__ = None
 
-    def sim(self, size, alpha=numpy.inf, nu=numpy.inf):
+    def sim(self, size, alpha=np.inf, nu=np.inf):
 
         # Check that the sizes and hyper-parameters are valid.
         assert all(n > 0 for n in size) and alpha > 0.0 and nu > 0.0
@@ -132,37 +132,37 @@ class model(object):
             # Generate the group indices.
             group.append(prop.rand().cumsum().searchsorted(random.rand(numpoint)))
 
-            comp.append(numpy.zeros(numpoint, dtype=int))
-            weight.append(numpy.zeros(numpoint))
-            obs.append(numpy.zeros([numdim, numpoint]))
+            comp.append(np.zeros(numpoint, dtype=int))
+            weight.append(np.zeros(numpoint))
+            obs.append(np.zeros([numdim, numpoint]))
 
             # Generate the component indices.
             for j, ind in unique(group[i]):
                 comp[i][ind] = emiss[j].cumsum().searchsorted(random.rand(len(ind)))
 
             # Generate the observation weights.
-            if numpy.isfinite(nu):
+            if np.isfinite(nu):
                 weight[i] = random.gamma(nu/2.0, size=numpoint)/(nu/2.0)
             else:
                 weight[i][:] = 1.0
 
             # Generate the observations.
             for j, ind in unique(comp[i]):
-                scale = numpy.sqrt(weight[i][ind])
-                obs[i][:, ind] = loc[j][:, numpy.newaxis] + \
-                                 numpy.dot(linalg.cholesky(disp[j]),
-                                           random.randn(numdim, len(ind))) / scale[numpy.newaxis, :]
+                scale = np.sqrt(weight[i][ind])
+                obs[i][:, ind] = loc[j][:, np.newaxis] + \
+                                 np.dot(linalg.cholesky(disp[j]),
+                                        random.randn(numdim, len(ind))) / scale[np.newaxis, :]
 
         return group, comp, weight, obs
 
-    def infer(self, obs, alpha=numpy.inf, nu=numpy.inf, initpost=True,
+    def infer(self, obs, alpha=np.inf, nu=np.inf, initpost=True,
               numiter=[10, 1000], noisetemp=1.0e-2, reltol=1.0e-6):
 
         numgroup, numcomp, numdim = self.__size__
 
         # Check that there the arguments are consistent with the size of the
         # model.
-        assert all(numpy.ndim(x)==2 and d==numdim for x in obs for d, n in (x.shape, ))
+        assert all(np.ndim(x)==2 and d==numdim for x in obs for d, n in (x.shape, ))
 
         numpoint = [n for x in obs for d, n in (x.shape, )]
 
@@ -212,10 +212,10 @@ class model(object):
 
             for j in range(numsamp):
 
-                loglik = numpy.zeros([numcomp, numpoint[j]])
+                loglik = np.zeros([numcomp, numpoint[j]])
 
                 if weight[j] is None:
-                    weight[j] = numpy.zeros([numcomp, numpoint[j]])
+                    weight[j] = np.zeros([numcomp, numpoint[j]])
 
                 # Evaluate the expected log-likelihood of the observations, and
                 # the expected value of the weights.
@@ -225,14 +225,14 @@ class model(object):
 
                 # Compute the joint log-probabilities.
                 prob[j] = post.samp[j].loglik().reshape([numgroup, 1, 1]) \
-                           + numpy.reshape([q.loglik() for q in post.group], [numgroup, numcomp, 1]) \
-                           + loglik[numpy.newaxis, :, :]
+                           + np.reshape([q.loglik() for q in post.group], [numgroup, numcomp, 1]) \
+                           + loglik[np.newaxis, :, :]
 
                 logconst = prob[j].max(axis=0).max(axis=0)
-                logconst += numpy.log(numpy.exp(prob[j] - logconst[numpy.newaxis, numpy.newaxis,:]).sum(axis=0).sum(axis=0))
+                logconst += np.log(np.exp(prob[j] - logconst[np.newaxis, np.newaxis,:]).sum(axis=0).sum(axis=0))
 
                 # Normalize to obtain the probabilities.
-                prob[j] = numpy.exp(prob[j] - logconst[numpy.newaxis, numpy.newaxis, :])
+                prob[j] = np.exp(prob[j] - logconst[np.newaxis, np.newaxis, :])
 
                 if i == 0:
 
@@ -240,8 +240,8 @@ class model(object):
                     prob[j] *= 1.0 - noisetemp*random.rand(numgroup, numcomp, numpoint[j])
                     prob[j] /= prob[j].sum(axis=0).sum(axis=0).reshape([1, 1, numpoint[j]])
 
-                    prob[j][numpy.logical_or(numpy.isnan(prob[j]),
-                                             numpy.isinf(prob[j]))] = 1.0/(numgroup*numcomp)
+                    prob[j][np.logical_or(np.isnan(prob[j]),
+                                          np.isinf(prob[j]))] = 1.0/(numgroup*numcomp)
 
                 # Accumulate the log-normalization constants.
                 bound[i] += logconst.sum()
