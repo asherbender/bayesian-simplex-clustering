@@ -8,7 +8,7 @@ class Dirichlet(object):
 
     # Define a structure-like container class for storing the parameters of the
     # Dirichlet distribution.
-    class param:
+    class Param(object):
         pi = None
         alpha = None
 
@@ -23,7 +23,7 @@ class Dirichlet(object):
             alpha = 1.0
 
         self.__dim__ = dim
-        self.__param__ = Dirichlet.param()
+        self.__param__ = Dirichlet.Param()
 
         # Initialize the parameters.
         self.__param__.pi = pi
@@ -121,8 +121,8 @@ class Dirichlet(object):
 
         assert isinstance(other, Dirichlet) and other.__dim__ == self.__dim__
 
-        post = Dirichlet.param()
-        prior = Dirichlet.param()
+        post = Dirichlet.Param()
+        prior = Dirichlet.Param()
 
         post.pi = self.__param__.pi
         post.alpha = self.__param__.alpha
@@ -166,7 +166,7 @@ class Dirichlet(object):
 
         dim = self.__dim__
 
-        stat = Dirichlet.param()
+        stat = Dirichlet.Param()
 
         # Initialize the expected sufficient statistics.
         stat.pi = np.zeros(dim)
@@ -190,7 +190,7 @@ class Dirichlet(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, Dirichlet.param) and np.size(stat.pi) == dim
+        assert isinstance(stat, Dirichlet.Param) and np.size(stat.pi) == dim
 
         pi = self.__param__.pi
         alpha = self.__param__.alpha
@@ -216,7 +216,7 @@ class GaussianGamma(object):
 
     # Define a structure-like container class for storing the parameters of the
     # Gauss-Gamma distribution.
-    class param:
+    class Param(object):
         mu = None
         omega = None
         sigma = None
@@ -237,7 +237,7 @@ class GaussianGamma(object):
             eta = 1.0
 
         self.__dim__ = dim
-        self.__param__ = GaussianGamma.param()
+        self.__param__ = GaussianGamma.Param()
 
         # Initialize the parameters.
         self.__param__.mu = mu
@@ -307,8 +307,8 @@ class GaussianGamma(object):
 
         assert isinstance(other, GaussianGamma) and other.__dim__ == self.__dim__
 
-        # Copy the parameters of the posterior
-        # distribution from the prior distribution.
+        # Copy the parameters of the posterior distribution from the prior
+        # distribution.
         self.__param__.mu[:] = other.__param__.mu
         self.__param__.omega = other.__param__.omega
         self.__param__.sigma[:] = other.__param__.sigma
@@ -395,8 +395,8 @@ class GaussianGamma(object):
 
         dim = self.__dim__
 
-        post = GaussianGamma.param()
-        prior = GaussianGamma.param()
+        post = GaussianGamma.Param()
+        prior = GaussianGamma.Param()
 
         post.mu = self.__param__.mu
         post.omega = self.__param__.omega
@@ -463,7 +463,7 @@ class GaussianGamma(object):
 
         dim = self.__dim__
 
-        stat = GaussianGamma.param()
+        stat = GaussianGamma.Param()
 
         # Initialize the expected sufficient statistics.
         stat.mu = np.zeros(dim)
@@ -565,7 +565,7 @@ class GaussianGamma(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, GaussianGamma.param) and np.size(stat.mu) == dim \
+        assert isinstance(stat, GaussianGamma.Param) and np.size(stat.mu) == dim \
                and np.size(stat.sigma) == dim
 
         mu = self.__param__.mu
@@ -617,7 +617,7 @@ class GaussianWishart(object):
 
     # Define a structure-like container class for storing the parameters of the
     # Gauss-Wishart distribution.
-    class param:
+    class Param(object):
         mu = None
         omega = None
         sigma = None
@@ -638,7 +638,7 @@ class GaussianWishart(object):
             eta = float(dim)
 
         self.__dim__ = dim
-        self.__param__ = GaussianWishart.param()
+        self.__param__ = GaussianWishart.Param()
 
         # Initialize the parameters.
         self.__param__.mu = mu
@@ -805,8 +805,8 @@ class GaussianWishart(object):
 
         dim = self.__dim__
 
-        post = GaussianWishart.param()
-        prior = GaussianWishart.param()
+        post = GaussianWishart.Param()
+        prior = GaussianWishart.Param()
 
         post.mu = self.__param__.mu
         post.omega = self.__param__.omega
@@ -878,7 +878,7 @@ class GaussianWishart(object):
 
         dim = self.__dim__
 
-        stat = GaussianWishart.param()
+        stat = GaussianWishart.Param()
 
         # Initialize the expected sufficient statistics.
         stat.mu = np.zeros(dim)
@@ -992,7 +992,7 @@ class GaussianWishart(object):
 
         dim = self.__dim__
 
-        assert isinstance(stat, GaussianWishart.param) and np.size(stat.mu) == dim \
+        assert isinstance(stat, GaussianWishart.Param) and np.size(stat.mu) == dim \
                and np.shape(stat.sigma) == (dim, dim)
 
         mu = self.__param__.mu
